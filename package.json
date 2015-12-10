@@ -1,6 +1,6 @@
 {
   "name": "phosphor-di",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "A lightweight module for asynchronous dependency injection.",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
