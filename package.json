@@ -1,0 +1,46 @@
+{
+  "name": "phosphor-di",
+  "version": "0.1.0",
+  "description": "A lightweight module for asynchronous dependency injection.",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "dependencies": {},
+  "devDependencies": {
+    "coveralls": "^2.11.4",
+    "expect.js": "^0.3.1",
+    "istanbul": "^0.3.19",
+    "mocha": "^2.2.5",
+    "rimraf": "^2.4.2",
+    "typedoc": "^0.3.12",
+    "typescript": "^1.6.2"
+  },
+  "scripts": {
+    "clean": "rimraf lib && rimraf test/build && rimraf test/coverage",
+    "build:src": "tsc --project src",
+    "build:test": "tsc --project test/src",
+    "build": "npm run build:src && npm run build:test",
+    "docs": "rimraf docs/api && typedoc --options scripts/tdoptions.json",
+    "prepublish": "npm run build",
+    "test": "mocha test/build/index.js",
+    "test:coverage": "istanbul cover --dir test/coverage node_modules/mocha/bin/_mocha -- test/build/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phosphorjs/phosphor-di.git"
+  },
+  "files": [
+    "lib/*.d.ts",
+    "lib/*.js"
+  ],
+  "keywords": [
+    "asynchronous",
+    "dependency",
+    "injection"
+  ],
+  "author": "S. Chris Colbert <sccolbert@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/phosphorjs/phosphor-di/issues"
+  },
+  "homepage": "https://github.com/phosphorjs/phosphor-di"
+}

@@ -1,0 +1,16 @@
+language: node_js
+node_js:
+  - '0.12'
+sudo: false
+env:
+  matrix:
+    - GROUP=
+  global:
+    - GHREPO=github.com/phosphorjs/phosphor-di
+    - secure: AAYC5KD5PuAQ0n0Rlty+9qNgiR5BAxD/YsJSOwRAkVYsdN6jqJXibdMN9k9x7jhtcM94qeeSWkQO6Kw5RbXYKeBbM7qXbbO4ts7ATwhgwiOTDJzITksi6dlHX+SFtr9vI+kfAiksV7S/Jq7pHF2gE3p/v3iJo0CGHUWQ7ugUDx6fF+jk1qwB4MQUC8/rMR19BaAoqedWOjMUEUhxCj/iivRWBYZzM41wUix+nrsDaOdJ5PCUHgYNZ+o/AkdGt+OWfbpugy+Wwb6htLxxauWIGQUixkKJlD+/n96jP0LqzzDVacVvbdmf0DeQSs67lFfssoQYTqAmirvWku3FyQ1tk5ffnMA4Wx+/g17zJ6AbLdhYuteDPLdG5f80kGBr6Ci5pSVgsEguZUx5/+EdxPne+YbHdeWkA4pxUGeGPRBz73NAq46xu92PYWvs7upDp/LEDD/tet7SFYctIJfssHVr5rHfBO2X6nwgmfJ2/+E1pzy4uXF/bCyb6vYdm+k7SGT8T3gASy2hhKNOUcDSZakvYhiylcqVqIjfBZ82D5G9Drq74uXH9Aj40Mf5aMUU/+GM74RF5BTMZudsKDMan9fM+Bv/OhQ8t40HFq7LPliPjXzvab4/WwvByxlFGHTrPuXEF340vBDZmKjX21Wcw3K5QgIKQmS4w3SRLq6+pBT7tRE=
+install:
+  - bash ./scripts/travis_install.sh
+script:
+  - bash ./scripts/travis_script.sh
+after_success:
+  - bash ./scripts/travis_after_success.sh
