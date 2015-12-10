@@ -131,24 +131,6 @@ function isRegistered<T>(token: Token<T>): boolean {
 
 
 /**
- * Register a type mapping if the token is not yet registered.
- *
- * @param token - The run-time type token of interest.
- *
- * @param provider - The object which will create the instance.
- *
- * #### Notes
- * If registering the provider would cause a circular dependency, an
- * error will be logged to the console and the registration will be
- * ignored.
- */
-export
-function registerIfMissing<T>(token: Token<T>, provider: Provider<T>): void {
-  if (!isRegistered(token)) register(token, provider);
-}
-
-
-/**
  * Register a type mapping for the specified token.
  *
  * @param token - The run-time type token of interest.
