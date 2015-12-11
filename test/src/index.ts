@@ -14,6 +14,7 @@ import {
 } from '../../lib/index';
 
 
+// Create interfaces, tokens, and providers for tests.
 interface IBar {
   bar: number;
 }
