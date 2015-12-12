@@ -10,14 +10,8 @@
 import expect = require('expect.js');
 
 import {
-  IFactory, Lifetime, Token, isRegistered, register, resolve
+  Container, IFactory, Lifetime, Token
 } from '../../lib/index';
-
-
-// Create interfaces, tokens, and providers for tests.
-interface IBar {
-  bar: number;
-}
 
 
 interface IFoo {
@@ -25,26 +19,27 @@ interface IFoo {
 }
 
 
-const IBar = new Token<IBar>('my-package.IBar');
+interface IBar {
+  bar: number;
+}
+
 
 const IFoo = new Token<IFoo>('my-package.IFoo');
+
+const IBar = new Token<IBar>('my-package.IBar');
 
 const IBaz = new Token<string>('my-package.IBaz');
 
 
-let barFactory: IFactory<IBar> = {
-  requires: [],
-  create: () => {
-    return { bar: 42 };
-  }
-}
-
-
 class Foo implements IFoo {
+
+  static lifetime = Lifetime.Transient;
 
   static requires = [IBar];
 
-  static lifetime = Lifetime.Transient;
+  static create(bar: IBar): IFoo {
+    return new Foo(bar);
+  }
 
   constructor(bar: IBar) {
     this._bar = bar;
@@ -58,11 +53,15 @@ class Foo implements IFoo {
 }
 
 
+let barFactory: IFactory<IBar> = {
+  requires: [],
+  create: () => ({ bar: 42 }),
+}
+
+
 let bazFactory: IFactory<string> = {
   requires: [IBaz],
-  create: function() {
-    return 'hello from baz';
-  }
+  create: () => 'baz',
 }
 
 
@@ -73,7 +72,7 @@ describe('phosphor-di', () => {
     describe('#constructor()', () => {
 
       it('should take a string argument', () => {
-        let t = new Token('test_constructor');
+        let t = new Token('test-constructor');
         expect(t instanceof Token).to.be(true);
       });
 
@@ -82,12 +81,12 @@ describe('phosphor-di', () => {
     describe('#name', () => {
 
       it('should get the name of the token', () => {
-        let t = new Token('test_name');
-        expect(t.name).to.be('test_name');
+        let t = new Token('test-name');
+        expect(t.name).to.be('test-name');
       });
 
       it('should be read only', () => {
-        let t = new Token('test_name_readonly');
+        let t = new Token('test-name-readonly');
         expect(() => { t.name = 'bar'; }).to.throwError();
       });
 
@@ -95,89 +94,76 @@ describe('phosphor-di', () => {
 
   });
 
-  describe('isRegistered()', () => {
+  describe('Container', () => {
 
-    it('should test whether a function is registered', () => {
-      let t = new Token('test_is_registered');
-      expect(isRegistered(t)).to.be(false);
-      register(t, {
-        requires: [],
-        create: () => {
-          return 'hello';
-        },
+    describe('#isRegistered()', () => {
+
+      it('should test whether a token is registered', () => {
+        let c = new Container();
+        let t = new Token<string>('test-is-registered');
+        expect(c.isRegistered(t)).to.be(false);
+        c.register(t, { requires: [], create: () => 'hello' });
+        expect(c.isRegistered(t)).to.be(true);
       });
-      expect(isRegistered(t)).to.be(true);
+
     });
 
-  });
+    describe('#register()', () => {
 
-  describe('register()', () => {
-
-    it('should register a type mapping for the specified token', () => {
-      let t = new Token('test_register');
-      register(t, Foo);
-      expect(isRegistered(t)).to.be(true);
-    });
-
-    it('should ignore a token that is already registered', () => {
-      let t = new Token<string>('test_register_duplicate');
-      let factory: IFactory<string> = {
-        requires: [],
-        create: () => {
-          return 'hello';
-        },
-      }
-      register(t, factory);
-      register(t, factory);
-    });
-
-    it('should ignore a circular dependency', () => {
-      register(IBaz, bazFactory);
-    });
-
-  });
-
-  describe('register()', () => {
-
-    it('should resolve an instance for a given token', (done) => {
-      register(IFoo, Foo);
-      register(IBar, barFactory);
-      resolve(IFoo).then(value => {
-        expect(value.foo).to.be('42');
-        done();
+      it('should register a type mapping for the specified token', () => {
+        let c = new Container();
+        let t = new Token<IFoo>('test-register');
+        c.register(t, Foo);
+        expect(c.isRegistered(t)).to.be(true);
       });
+
+      it('should ignore a token that is already registered', () => {
+        let c = new Container();
+        let t = new Token<string>('test-register-duplicate');
+        let factory: IFactory<string> = { requires: [], create: () => 'hello' };
+        c.register(t, factory);
+        c.register(t, factory);
+      });
+
+      it('should ignore a circular dependency', () => {
+        let c = new Container();
+        c.register(IBaz, bazFactory);
+      });
+
     });
 
-    it('should resolve an instance for a given provider', (done) => {
-      register(IFoo, Foo);
-      register(IBar, barFactory);
-      resolve(Foo).then(value => {
-        expect(value.foo).to.be('42');
-        done();
-      });
-    });
+    describe('#resolve()', () => {
 
-    it('should resolve an instance for a given provider', (done) => {
-      register(IFoo, Foo);
-      register(IBar, barFactory);
-      resolve(Foo).then(value => {
-        expect(value.foo).to.be('42');
-        done();
+      it('should resolve an instance for a given token', (done) => {
+        let c = new Container();
+        c.register(IFoo, Foo);
+        c.register(IBar, barFactory);
+        c.resolve(IFoo).then(value => {
+          expect(value.foo).to.be('42');
+          done();
+        });
       });
-    });
 
-    it('should reject if it fails on a token', (done) => {
-      resolve(IBaz).catch(error => {
-        expect(error.message.indexOf("Unregistered token")).to.not.be(-1);
-        done();
+      it('should resolve an instance for a given factory', (done) => {
+        let c = new Container();
+        c.register(IFoo, Foo);
+        c.register(IBar, barFactory);
+        c.resolve(Foo).then(value => {
+          expect(value.foo).to.be('42');
+          done();
+        });
       });
-    });
 
-    it('should reject if it fails on a provider', (done) => {
-      resolve(bazFactory).catch(error => {
-        expect(error.message.indexOf("Unregistered token")).to.not.be(-1);
-        done();
+      it('should reject if it fails on a token', (done) => {
+        let c = new Container();
+        c.resolve(IBaz).catch(error => { done(); });
       });
+
+      it('should reject if it fails on a factory', (done) => {
+        let c = new Container();
+        c.resolve(bazFactory).catch(error => { done(); });
+      });
+
     });
 
   });
